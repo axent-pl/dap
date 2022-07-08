@@ -2,9 +2,9 @@
 from flask import url_for, send_file
 from flask_restx import Resource, fields
 from werkzeug.datastructures import FileStorage
-from werkzeug.exceptions import NotFound, BadRequest
+from werkzeug.exceptions import BadRequest
 from app.api.api import api
-from app.service.dataset_service import DatasetService
+from app.service.dataset_service import DatasetService, NotFoundException
 
 ns = api.namespace('dataset', description='Dataset operations')
 
@@ -29,6 +29,11 @@ data_post_parser = api.parser()
 data_post_parser.add_argument('file', location='files', type=FileStorage, required=True)
 
 
+@ns.errorhandler(NotFoundException)
+def handle_dataset_not_found_exception(error):
+    return {'message': 'Not found'}, 404
+
+
 @ns.route('/')
 class DatasetResourceList(Resource):
 
@@ -36,7 +41,6 @@ class DatasetResourceList(Resource):
     @ns.marshal_list_with(dataset_model, skip_none=True)
     def get(self):
         datasets = DatasetService.search()
-        ns.logger.debug(datasets)
         return datasets
 
     @ns.expect(dataset_model)
@@ -51,8 +55,6 @@ class DatasetResource(Resource):
     @ns.marshal_with(dataset_model, skip_none=True)
     def get(self, dataset_name):
         dataset = DatasetService.read(dataset_name)
-        if not dataset:
-            raise NotFound("Dataset not found")
         return dataset
 
 
@@ -62,8 +64,6 @@ class DatasetVariantResource(Resource):
     @ns.marshal_with(dataset_variant_model, skip_none=True)
     def get(self, dataset_name, variant_name):
         dataset_variant = DatasetService.read_variant(dataset_name, variant_name)
-        if not dataset_variant:
-            raise NotFound("Dataset variant not found")
         return dataset_variant
 
     @ns.expect(data_post_parser)

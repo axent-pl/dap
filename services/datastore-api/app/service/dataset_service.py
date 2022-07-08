@@ -6,17 +6,22 @@ from werkzeug.datastructures import FileStorage
 from app.adapter.s3 import S3Adapter
 
 
+class NotFoundException(Exception):
+    pass
+
 @dataclass
 class DatasetVariantData:
     filename: str = field(default=None)
     dataset_name: str = field(default=None)
     variant_name: str = field(default=None)
 
+
 @dataclass
 class DatasetVariant:
     name: str = field(default=None)
     dataset_name: str = field(default=None)
     data: List[DatasetVariantData] = field(default_factory=lambda : [])
+
 
 @dataclass
 class Dataset:
@@ -38,7 +43,7 @@ class DatasetService:
         S3Adapter.put_folder(name)
 
     def read(name: str) -> Dataset:
-        if not S3Adapter.folder_exists(name): return None
+        if not S3Adapter.folder_exists(name): raise NotFoundException()
         dataset = Dataset()
         dataset.name = name
         dataset_contents = S3Adapter.get_files_and_folers(name)
@@ -50,7 +55,7 @@ class DatasetService:
 
     def read_variant(dataset_name: str, variant_name: str) -> DatasetVariant:
         path: str = f'{dataset_name}/variants/{variant_name}'
-        if not S3Adapter.folder_exists(path): return None
+        if not S3Adapter.folder_exists(path): raise NotFoundException()
         v = DatasetVariant()
         v.dataset_name = dataset_name
         v.name = variant_name
