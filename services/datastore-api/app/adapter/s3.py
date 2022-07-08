@@ -1,6 +1,6 @@
 import boto3
 from typing import Tuple
-from  botocore.response import StreamingBody
+from botocore.response import StreamingBody
 from werkzeug.datastructures import FileStorage
 from app.config.s3config import S3Config
 

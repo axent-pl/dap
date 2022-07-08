@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import List
 from werkzeug.datastructures import FileStorage
 from app.adapter.s3 import S3Adapter
-
+from botocore.exceptions import UnknownKeyError
 
 class NotFoundException(Exception):
     pass
@@ -69,7 +69,10 @@ class DatasetService:
         return v
 
     def read_data(dataset_name: str, variant_name: str, filename: str) -> Tuple[str, StreamingBody]:
-        return S3Adapter.get_file(f'{dataset_name}/variants/{variant_name}/{filename}')
+        try:
+            return S3Adapter.get_file(f'{dataset_name}/variants/{variant_name}/{filename}')
+        except S3Adapter.client.exceptions.NoSuchKey:
+            raise NotFoundException()
 
     def put_input_file(name: str, file: FileStorage) -> None:
         S3Adapter.put_folder(f'{name}/variants/input')

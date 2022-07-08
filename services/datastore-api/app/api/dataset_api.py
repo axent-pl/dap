@@ -1,31 +1,30 @@
 
 from flask import url_for, send_file
-from flask_restx import Resource, fields
+from flask_restx import Namespace, Resource, fields
 from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import BadRequest
-from app.api.api import api
 from app.service.dataset_service import DatasetService, NotFoundException
 
-ns = api.namespace('dataset', description='Dataset operations')
+ns = Namespace('dataset', description='Dataset operations')
 
-dataset_variant_data_model = api.model('DatasetVariantData',{
+dataset_variant_data_model = ns.model('DatasetVariantData',{
     'filename' : fields.String(required=True, description='Data file name'),
     'uri' : fields.String(attribute=lambda vd: url_for('dataset_dataset_variant_data_resource', dataset_name=vd.dataset_name, variant_name=vd.variant_name, filename=vd.filename, _external=True)),
 })
 
-dataset_variant_model = api.model('DatasetVariant', {
+dataset_variant_model = ns.model('DatasetVariant', {
     'name' : fields.String(required=True, description='Dataset variant name'),
     'uri' : fields.String(attribute=lambda v: url_for('dataset_dataset_variant_resource', dataset_name=v.dataset_name, variant_name=v.name, _external=True)),
     'data' : fields.Nested(dataset_variant_data_model, skip_none=True)
 })
 
-dataset_model = api.model('Dataset', {
+dataset_model = ns.model('Dataset', {
     'name' : fields.String(required=True, description='Dataset name'),
     'uri' : fields.String(attribute=lambda d: url_for('dataset_dataset_resource', dataset_name=d.name, _external=True)),
     'variants' : fields.Nested(dataset_variant_model, skip_none=True)
 })
 
-data_post_parser = api.parser()
+data_post_parser = ns.parser()
 data_post_parser.add_argument('file', location='files', type=FileStorage, required=True)
 
 

@@ -1,10 +1,8 @@
 from flask import Flask
-
-from app.api.api import api
-from app.api.dataset_api import ns as dataset_ns
-
+from app.api import api
 
 app = Flask(__name__)
 
-api.add_namespace(dataset_ns)
 api.init_app(app)
+
+app.run(debug=True)
