@@ -2,6 +2,14 @@ version: '3.4'
 
 services:
 
+  gateway:
+    build:
+        context: services/gateway
+    ports:
+        - "80:80"
+    networks:
+        - dap
+
   datastore-api:
     build:
         context: services/datastore-api

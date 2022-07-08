@@ -1,4 +1,6 @@
 import boto3
+from typing import Tuple
+from  botocore.response import StreamingBody
 from werkzeug.datastructures import FileStorage
 from app.config.s3config import S3Config
 
@@ -29,6 +31,15 @@ class S3Adapter:
         folders = [ item['Prefix'].strip('/') for item in objects['CommonPrefixes'] ] if 'CommonPrefixes' in objects else []
         return folders
 
+    def folder_exists(path:str) -> bool:
+        path = path.rstrip('/')
+        objects = S3Adapter.client.list_objects(
+            Bucket = S3Config.bucket,
+            Prefix = path,
+            Delimiter = '/',
+            MaxKeys = 1)
+        return 'CommonPrefixes' in objects
+
     def get_files_and_folers(path):
         objects = S3Adapter.client.list_objects(
             Bucket = S3Config.bucket,
@@ -42,3 +53,9 @@ class S3Adapter:
             S3Config.bucket,
             f'{path}/{file.filename}',
             ExtraArgs = {'ContentType': file.mimetype})
+
+    def get_file(path: str) -> Tuple[str, StreamingBody]: 
+        object = S3Adapter.resource.Object(
+            S3Config.bucket,
+            path).get()
+        return object['ContentType'], object['Body']

@@ -1,7 +1,7 @@
 from flask import Flask
 
 from app.api.api import api
-from app.api.dataset import ns as dataset_ns
+from app.api.dataset_api import ns as dataset_ns
 
 
 app = Flask(__name__)
