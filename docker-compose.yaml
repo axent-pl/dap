@@ -2,6 +2,16 @@ version: '3.4'
 
 services:
 
+  frontend:
+    build:
+        context: services/frontend
+    volumes:
+        - ./services/frontend/dap:/opt/dap
+    ports:
+        - "3000:3000"
+    networks:
+        - dap
+
   gateway:
     build:
         context: services/gateway

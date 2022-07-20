@@ -1,0 +1,212 @@
+{
+	"info": {
+		"_postman_id": "668ef0e5-7298-4715-af72-0c0e33b89eef",
+		"name": "DAP",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Store input data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "input.csv"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{env_datastore_api_url}}/dataset/crypto/input/crypto-compare.csv",
+					"host": [
+						"{{env_datastore_api_url}}"
+					],
+					"path": [
+						"dataset",
+						"crypto",
+						"input",
+						"crypto-compare.csv"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Store input data once again",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "input.csv"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{env_datastore_api_url}}/dataset/crypto/input/crypto-compare.csv",
+					"host": [
+						"{{env_datastore_api_url}}"
+					],
+					"path": [
+						"dataset",
+						"crypto",
+						"input",
+						"crypto-compare.csv"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List datasets",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Dataset `cyrpto` is in the list\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.filter(item => item.name == 'crypto').length).to.equal(1);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{env_datastore_api_url}}/dataset",
+					"host": [
+						"{{env_datastore_api_url}}"
+					],
+					"path": [
+						"dataset"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get dataset",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Dataset URI is valid\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.uri).to.eql(pm.request.url.toString());",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{env_datastore_api_url}}/dataset/crypto",
+					"host": [
+						"{{env_datastore_api_url}}"
+					],
+					"path": [
+						"dataset",
+						"crypto"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get dataset input variant",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Dataset variant URI is valid\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.uri).to.eql(pm.request.url.toString());",
+							"});",
+							"pm.test(\"Dataset variant data exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.exist;",
+							"});",
+							"pm.test(\"Dataset variant data is not empty\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.length).to.gte(1);",
+							"});",
+							"pm.test(\"Dataset variant data contains input file\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.filter(item => item.filename == 'crypto-compare.csv').length).to.equal(1)",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{env_datastore_api_url}}/dataset/crypto/input",
+					"host": [
+						"{{env_datastore_api_url}}"
+					],
+					"path": [
+						"dataset",
+						"crypto",
+						"input"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
