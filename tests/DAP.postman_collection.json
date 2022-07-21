@@ -1,19 +1,33 @@
 {
 	"info": {
-		"_postman_id": "668ef0e5-7298-4715-af72-0c0e33b89eef",
+		"_postman_id": "ac6c973a-9cce-44aa-8f5c-4fa752634a44",
 		"name": "DAP",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Store input data",
+			"name": "Create dataset",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"pm.test(\"Dataset name exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.name).to.exist",
+							"    pm.collectionVariables.set(\"cv_dataset_name\", jsonData.name);",
+							"});",
+							"pm.test(\"Dataset url exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.url).to.exist",
+							"});",
+							"pm.test(\"Dataset variants url exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.variants_url).to.exist",
+							"    pm.collectionVariables.set(\"cv_variants_url\", jsonData.variants_url);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -21,42 +35,38 @@
 				}
 			],
 			"request": {
-				"method": "PUT",
+				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "file",
-							"type": "file",
-							"src": "input.csv"
+					"mode": "raw",
+					"raw": "{\n    \"name\" : \"test-{{$randomProductName}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
-					]
+					}
 				},
 				"url": {
-					"raw": "{{env_datastore_api_url}}/dataset/crypto/input/crypto-compare.csv",
+					"raw": "{{env_datastore_api_url}}/dataset",
 					"host": [
 						"{{env_datastore_api_url}}"
 					],
 					"path": [
-						"dataset",
-						"crypto",
-						"input",
-						"crypto-compare.csv"
+						"dataset"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Store input data once again",
+			"name": "Create duplicated dataset",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
+							"pm.test(\"Status code is 409\", function () {",
+							"    pm.response.to.have.status(409);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -64,28 +74,24 @@
 				}
 			],
 			"request": {
-				"method": "PUT",
+				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "file",
-							"type": "file",
-							"src": "input.csv"
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"{{cv_dataset_name}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
-					]
+					}
 				},
 				"url": {
-					"raw": "{{env_datastore_api_url}}/dataset/crypto/input/crypto-compare.csv",
+					"raw": "{{env_datastore_api_url}}/dataset",
 					"host": [
 						"{{env_datastore_api_url}}"
 					],
 					"path": [
-						"dataset",
-						"crypto",
-						"input",
-						"crypto-compare.csv"
+						"dataset"
 					]
 				}
 			},
@@ -101,9 +107,23 @@
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
 							"});",
-							"pm.test(\"Dataset `cyrpto` is in the list\", function () {",
+							"pm.test(\"Created dataset exists\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.filter(item => item.name == 'crypto').length).to.equal(1);",
+							"    var expectedDatasetName = pm.collectionVariables.get(\"cv_dataset_name\");",
+							"    pm.expect(jsonData.filter(dataset => dataset.name == expectedDatasetName).length).to.equal(1)",
+							"    pm.collectionVariables.set(\"cv_dataset_url\", jsonData.filter(dataset => dataset.name == expectedDatasetName)[0].url);",
+							"});",
+							"pm.test(\"Created dataset has url\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var expectedDatasetName = pm.collectionVariables.get(\"cv_dataset_name\");",
+							"    pm.expect(jsonData.filter(dataset => dataset.name == expectedDatasetName)[0].url).to.exist",
+							"    pm.collectionVariables.set(\"cv_dataset_url\", jsonData.filter(dataset => dataset.name == expectedDatasetName)[0].url);",
+							"});",
+							"pm.test(\"Created dataset has variants url\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var expectedDatasetName = pm.collectionVariables.get(\"cv_dataset_name\");",
+							"    pm.expect(jsonData.filter(dataset => dataset.name == expectedDatasetName)[0].variants_url).to.exist",
+							"    pm.collectionVariables.set(\"cv_dataset_variants_url\", jsonData.filter(dataset => dataset.name == expectedDatasetName)[0].variants_url);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -126,7 +146,7 @@
 			"response": []
 		},
 		{
-			"name": "Get dataset",
+			"name": "Read dataset",
 			"event": [
 				{
 					"listen": "test",
@@ -134,10 +154,6 @@
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
-							"});",
-							"pm.test(\"Dataset URI is valid\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.uri).to.eql(pm.request.url.toString());",
 							"});"
 						],
 						"type": "text/javascript"
@@ -148,20 +164,16 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{env_datastore_api_url}}/dataset/crypto",
+					"raw": "{{cv_dataset_url}}",
 					"host": [
-						"{{env_datastore_api_url}}"
-					],
-					"path": [
-						"dataset",
-						"crypto"
+						"{{cv_dataset_url}}"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Get dataset input variant",
+			"name": "Read dataset variants",
 			"event": [
 				{
 					"listen": "test",
@@ -169,22 +181,6 @@
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
-							"});",
-							"pm.test(\"Dataset variant URI is valid\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.uri).to.eql(pm.request.url.toString());",
-							"});",
-							"pm.test(\"Dataset variant data exists\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.data).to.exist;",
-							"});",
-							"pm.test(\"Dataset variant data is not empty\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.data.length).to.gte(1);",
-							"});",
-							"pm.test(\"Dataset variant data contains input file\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.data.filter(item => item.filename == 'crypto-compare.csv').length).to.equal(1)",
 							"});"
 						],
 						"type": "text/javascript"
@@ -195,18 +191,107 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{env_datastore_api_url}}/dataset/crypto/input",
+					"raw": "{{cv_dataset_variants_url}}",
 					"host": [
-						"{{env_datastore_api_url}}"
-					],
-					"path": [
-						"dataset",
-						"crypto",
-						"input"
+						"{{cv_dataset_variants_url}}"
 					]
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Create dataset variant",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"input\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{cv_dataset_variants_url}}",
+					"host": [
+						"{{cv_dataset_variants_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create duplicated dataset variant",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409\", function () {",
+							"    pm.response.to.have.status(409);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"input\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{cv_dataset_variants_url}}",
+					"host": [
+						"{{cv_dataset_variants_url}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "variants_url",
+			"value": ""
+		},
+		{
+			"key": "cv_variants_url",
+			"value": ""
+		},
+		{
+			"key": "cv_dataset_name",
+			"value": ""
+		},
+		{
+			"key": "cv_dataset_url",
+			"value": ""
+		},
+		{
+			"key": "cv_dataset_variants_url",
+			"value": ""
 		}
 	]
 }

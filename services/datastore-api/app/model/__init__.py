@@ -14,10 +14,8 @@ class DatasetVariantData:
 class DatasetVariant:
     name: str = field(default=None)
     dataset_name: str = field(default=None)
-    data: List[DatasetVariantData] = field(default_factory=lambda : [])
 
 
 @dataclass
 class Dataset:
     name: str = field(default=None)
-    variants: List[DatasetVariant] = field(default_factory=lambda : [])
