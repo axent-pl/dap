@@ -1,5 +1,6 @@
+from io import BytesIO
 import boto3
-from typing import List, Tuple
+from typing import IO, List, Tuple
 from botocore.response import StreamingBody
 from werkzeug.datastructures import FileStorage
 from app.config.s3config import S3Config
@@ -118,6 +119,13 @@ class S3Adapter:
                 data = DatasetVariantData(filename, dataset_name, variant_name, bucket_object.Object().content_type, bucket_object.size)
                 data_list.append(data)
         return data_list
+
+    def save_dataset_variant_data(dataset_name: str, variant_name: str, content_type: str, filename: str, contents: IO[bytes]):
+        S3Adapter.client.upload_fileobj(
+            contents,
+            S3Config.bucket,
+            f'{dataset_name}/variants/{variant_name}/{filename}',
+            ExtraArgs = {'ContentType': content_type})
 
     ###########################################################################
 

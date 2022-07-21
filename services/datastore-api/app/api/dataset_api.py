@@ -1,7 +1,7 @@
-from flask import url_for, send_file, jsonify
+from typing import IO
+from flask import url_for, send_file, request
 from flask_restx import Namespace, Resource, fields
 from werkzeug.datastructures import FileStorage
-from werkzeug.exceptions import BadRequest
 from app.service.dataset_service import DatasetService, DatasetVariantService, DatasetVariantDataService, DatasetNotFoundException, DatasetExistsException, DatasetVariantExistsException
 
 ns = Namespace('dataset', description='Dataset operations')
@@ -38,10 +38,6 @@ dataset_model = ns.model('Dataset', {
 dataset_input_model = ns.model('Dataset', {
     'name' : fields.String(required=True, description='Dataset name')
 })
-
-
-data_post_parser = ns.parser()
-data_post_parser.add_argument('file', location='files', type=FileStorage, required=True)
 
 
 @ns.errorhandler(DatasetNotFoundException)
@@ -118,6 +114,11 @@ class DatasetVariantDataResourceList(Resource):
     def get(self, dataset_name, variant_name):
         return DatasetVariantDataService.list(dataset_name, variant_name)
 
+    def post(self, dataset_name, variant_name):
+        content_type: str = request.headers.get('Content-Type')        
+        contents: IO[bytes] = request.stream
+        DatasetVariantDataService.create(dataset_name, variant_name, content_type, contents)
+
 @ns.route('/<string:dataset_name>/variants/<string:variant_name>/data/<string:filename>')
 class DatasetVariantDataResource(Resource):
 
@@ -125,8 +126,7 @@ class DatasetVariantDataResource(Resource):
         file_type, file = DatasetVariantDataService.read(dataset_name, variant_name, filename)
         return send_file(file, mimetype=file_type)
 
-    @ns.expect(data_post_parser)
     def put(self, dataset_name, variant_name, filename):
-        args = data_post_parser.parse_args()
-        file = args['file']
-        DatasetVariantDataService.create(dataset_name, variant_name, filename, file)
+        content_type: str = request.headers.get('Content-Type')        
+        contents: IO[bytes] = request.stream
+        DatasetVariantDataService.save(dataset_name, variant_name, content_type, filename, contents)
