@@ -1,0 +1,69 @@
+version: '3.4'
+
+services:
+
+  frontend:
+    build:
+        context: services/frontend
+    volumes:
+        - ./services/frontend/dap:/opt/dap
+    ports:
+        - "3000:3000"
+    networks:
+        - dap
+
+  gateway:
+    build:
+        context: services/gateway
+    ports:
+        - "80:80"
+    networks:
+        - dap
+
+  datastore-api:
+    build:
+        context: services/datastore-api
+    volumes:
+        - ./services/datastore-api/app:/opt/dap/datastore-api/app
+    environment:
+        - S3_HOST=datastore-s3
+        - S3_PORT=9000
+        - S3_BUCKET=${S3_BUCKET}
+        - S3_AUTH_KEY_ID=${S3_AUTH_KEY_ID}
+        - S3_AUTH_SECRET_KEY=${S3_AUTH_SECRET_KEY}
+    ports:
+        - "5000:5000"
+    networks:
+        - dap
+
+  datastore-s3:
+    build:
+        context: services/datastore-s3
+    command:
+        - server
+        - /home/shared
+        - --console-address
+        - ":9001"
+    ports:
+        - "9000:9000"
+        - "9001:9001"
+    networks:
+        - dap
+
+  datastore-s3-config-job:
+    build:
+        context: services/datastore-s3-config
+    environment:
+        - S3_HOST=datastore-s3
+        - S3_PORT=9000
+        - S3_BUCKET=${S3_BUCKET}
+        - S3_AUTH_ROOT_KEY_ID=${S3_AUTH_ROOT_KEY_ID}
+        - S3_AUTH_ROOT_SECRET_KEY=${S3_AUTH_ROOT_SECRET_KEY}
+        - S3_AUTH_KEY_ID=${S3_AUTH_KEY_ID}
+        - S3_AUTH_SECRET_KEY=${S3_AUTH_SECRET_KEY}
+    networks:
+        - dap
+
+networks:
+    dap:
+        driver: bridge

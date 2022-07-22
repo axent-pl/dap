@@ -1,0 +1,397 @@
+{
+	"info": {
+		"_postman_id": "ac6c973a-9cce-44aa-8f5c-4fa752634a44",
+		"name": "DAP",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create dataset",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"pm.test(\"Dataset name exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.name).to.exist",
+							"    pm.collectionVariables.set(\"cv_dataset_name\", jsonData.name);",
+							"});",
+							"pm.test(\"Dataset url exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.url).to.exist",
+							"});",
+							"pm.test(\"Dataset variants url exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.variants_url).to.exist",
+							"    pm.collectionVariables.set(\"cv_variants_url\", jsonData.variants_url);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\" : \"test-{{$randomProductName}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{env_datastore_api_url}}/dataset",
+					"host": [
+						"{{env_datastore_api_url}}"
+					],
+					"path": [
+						"dataset"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create duplicated dataset",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409\", function () {",
+							"    pm.response.to.have.status(409);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"{{cv_dataset_name}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{env_datastore_api_url}}/dataset",
+					"host": [
+						"{{env_datastore_api_url}}"
+					],
+					"path": [
+						"dataset"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List datasets",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Created dataset exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var expectedDatasetName = pm.collectionVariables.get(\"cv_dataset_name\");",
+							"    pm.expect(jsonData.filter(dataset => dataset.name == expectedDatasetName).length).to.equal(1)",
+							"    pm.collectionVariables.set(\"cv_dataset_url\", jsonData.filter(dataset => dataset.name == expectedDatasetName)[0].url);",
+							"});",
+							"pm.test(\"Created dataset has url\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var expectedDatasetName = pm.collectionVariables.get(\"cv_dataset_name\");",
+							"    pm.expect(jsonData.filter(dataset => dataset.name == expectedDatasetName)[0].url).to.exist",
+							"    pm.collectionVariables.set(\"cv_dataset_url\", jsonData.filter(dataset => dataset.name == expectedDatasetName)[0].url);",
+							"});",
+							"pm.test(\"Created dataset has variants url\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var expectedDatasetName = pm.collectionVariables.get(\"cv_dataset_name\");",
+							"    pm.expect(jsonData.filter(dataset => dataset.name == expectedDatasetName)[0].variants_url).to.exist",
+							"    pm.collectionVariables.set(\"cv_dataset_variants_url\", jsonData.filter(dataset => dataset.name == expectedDatasetName)[0].variants_url);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{env_datastore_api_url}}/dataset",
+					"host": [
+						"{{env_datastore_api_url}}"
+					],
+					"path": [
+						"dataset"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read dataset",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{cv_dataset_url}}",
+					"host": [
+						"{{cv_dataset_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read dataset variants",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{cv_dataset_variants_url}}",
+					"host": [
+						"{{cv_dataset_variants_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create dataset variant",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"input\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{cv_dataset_variants_url}}",
+					"host": [
+						"{{cv_dataset_variants_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create duplicated dataset variant",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409\", function () {",
+							"    pm.response.to.have.status(409);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"input\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{cv_dataset_variants_url}}",
+					"host": [
+						"{{cv_dataset_variants_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read dataset variants",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Created variant exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.filter(variant => variant.name == 'input').length).to.equal(1)",
+							"});",
+							"pm.test(\"Created variant has data list URL\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.filter(variant => variant.name == 'input')[0].data_list_url).to.exist",
+							"    pm.collectionVariables.set(\"cv_input_variant_data_list_url\", jsonData.filter(variant => variant.name == 'input')[0].data_list_url);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{cv_dataset_variants_url}}",
+					"host": [
+						"{{cv_dataset_variants_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post data",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/csv",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "Col1,Col2\na,1\nb,2\nc,3\nd,4",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{cv_input_variant_data_list_url}}",
+					"host": [
+						"{{cv_input_variant_data_list_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read dataset variant data list",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Created variant data list is not empty\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.length).to.equal(1)",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{cv_input_variant_data_list_url}}",
+					"host": [
+						"{{cv_input_variant_data_list_url}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "variants_url",
+			"value": ""
+		},
+		{
+			"key": "cv_variants_url",
+			"value": ""
+		},
+		{
+			"key": "cv_dataset_name",
+			"value": ""
+		},
+		{
+			"key": "cv_dataset_url",
+			"value": ""
+		},
+		{
+			"key": "cv_dataset_variants_url",
+			"value": ""
+		},
+		{
+			"key": "cv_input_variant_data_list_url",
+			"value": ""
+		}
+	]
+}
