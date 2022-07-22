@@ -192,7 +192,7 @@ class DatasetVariantFileList extends Component {
               <td>{ file.filename }</td>
               <td>{ file.content_type }</td>
               <td>{ file.size }</td>
-              <td>{ file.url }</td>
+              <td><a href={ file.url }>Download</a></td>
             </tr>
           )) }
         </tbody>
