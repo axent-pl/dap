@@ -1,4 +1,4 @@
-from io import BytesIO
+from io import BytesIO, BufferedReader
 import boto3
 from typing import IO, List, Tuple
 from botocore.response import StreamingBody
@@ -98,12 +98,15 @@ class S3Adapter:
 
     def read_dataset_variant(dataset_name: str, variant_name: str) -> DatasetVariant:
         '''
-        Read dataset variant with a list of data
+        Read dataset variant
         '''
         variant = DatasetVariant(variant_name, dataset_name)
         return variant
 
     def create_dataset_variant(dataset_name: str, variant_name: str) -> None:
+        '''
+        Create dataset variant
+        '''
         S3Adapter.client.put_object(
             Bucket = S3Config.bucket,
             Key = (f'/{dataset_name}/variants/{variant_name}/'))
@@ -111,6 +114,9 @@ class S3Adapter:
     ###########################################################################
 
     def list_dataset_variant_data(dataset_name: str, variant_name: str) -> List[DatasetVariantData]:
+        '''
+        List dataset variant files
+        '''
         data_list: List[DatasetVariantData] = []
         for bucket_object in S3Adapter._bucket_objects(f'{dataset_name}/variants/{variant_name}'):
             key_parts = bucket_object.key.split('/')
@@ -121,28 +127,20 @@ class S3Adapter:
         return data_list
 
     def save_dataset_variant_data(dataset_name: str, variant_name: str, content_type: str, filename: str, contents: IO[bytes]):
+        '''
+        Create or update dataset variant file
+        '''
         S3Adapter.client.upload_fileobj(
             contents,
             S3Config.bucket,
             f'{dataset_name}/variants/{variant_name}/{filename}',
             ExtraArgs = {'ContentType': content_type})
 
-    ###########################################################################
-
-    def put_folder(path):
-        S3Adapter.client.put_object(
-            Bucket = S3Config.bucket,
-            Key = (f'/{path}/'))
-
-    def upload_file(path: str, file: FileStorage):
-        S3Adapter.client.upload_fileobj(
-            file.stream,
-            S3Config.bucket,
-            path,
-            ExtraArgs = {'ContentType': file.mimetype})
-
-    def get_file(path: str) -> Tuple[str, StreamingBody]: 
+    def read_dataset_variant_data(dataset_name: str, variant_name: str, filename: str) -> Tuple[str, BufferedReader]: 
+        '''
+        Read dataset variant file
+        '''
         object = S3Adapter.resource.Object(
             S3Config.bucket,
-            path).get()
-        return object['ContentType'], object['Body']
+            f'{dataset_name}/variants/{variant_name}/{filename}').get()
+        return object['ContentType'], BufferedReader(object['Body']._raw_stream)
